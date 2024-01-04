@@ -1,0 +1,1 @@
+This is a straightforward word scramble game featuring a database of over 12,000 words. The game awards points based on the length of the player's guesses, and it boasts a visually appealing UI with a user-friendly interface
