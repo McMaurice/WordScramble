@@ -16,42 +16,82 @@ struct ContentView: View {
     @State private var errorTitle = ""
     @State private var errorMassage = ""
     @State private var showingError = false
+    @FocusState private var isFocused: Bool
+
     
     var body: some View {
-        NavigationView {
-            List {
-                Section {
-                    TextField("Enter your word", text: $newWord)
+        NavigationStack {
+            VStack {
+                Text("Earn one point for every letter in your word.")
+                    .italic()
+                    .padding(.top)
+                
+                VStack(alignment: .leading) {
+                    TextField("Enter your word...", text: $newWord)
                         .autocapitalization(.none)
+                        .padding()
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .cornerRadius(25)
+                        .focused($isFocused)
+                        
                 }
-                Section {
-                    ForEach(usedWord, id: \.self) { word in
-                        HStack {
-                            Image(systemName: "\(word.count).circle")
-                            Text(word)
+                .padding()
+                Button(action: {
+                    addNewWord()
+                }) {
+                    Text("Submit")
+                        .padding(EdgeInsets(top: 10, leading: 20, bottom: 10, trailing: 20))
+                        .foregroundColor(.white)
+                        .background(Color.blue)
+                        .cornerRadius(25)
+                }
+
+                VStack {
+                    List {
+                        ForEach(usedWord, id: \.self) { word in
+                            HStack {
+                               // Image(systemName: "\(word.count).circle")
+                                Text(word)
+                                Spacer()
+                                Text("\(word.count) Point")
+                                    .foregroundColor(.green)
+                            }
+                            .font(.callout)
                         }
                     }
                 }
                 Text("Your current score is \(score)")
-
+                    .font(.headline)
+                
+                
             }
             .navigationTitle(rootWord.uppercased())
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
-                Button("Restart", action: startGame)
+                Button("New Word", action: startGame)
             }
             .onSubmit(addNewWord)
             .onAppear(perform: startGame)
             .alert(errorTitle, isPresented: $showingError) {
                 Button("OK", role: .cancel) { }
-                } message: {
-                    Text(errorMassage)
-                }
+            } message: {
+                Text(errorMassage)
+            }
+            .onAppear {
+                isFocused = true
+            }
+            
         }
+        
     }///
     
     func addNewWord() {
+        
         let ans = newWord.components(separatedBy: CharacterSet.symbols).joined().lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-        guard ans.count > 2 else {return}
+        guard ans.count > 2 else {
+            wordError(title: "To Short!", message: "Try again!")
+            return
+        }
         
         guard isOriginal(word: ans) else {
             wordError(title: "Word alredy used!", message: "Oops! Try again")
